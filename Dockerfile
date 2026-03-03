@@ -18,7 +18,6 @@ RUN docker-php-ext-install \
     pdo \
     pdo_mysql \
     pdo_sqlite \
-    sqlite3 \
     mbstring \
     exif \
     pcntl \
@@ -34,11 +33,15 @@ COPY . .
 # Install deps
 RUN composer install --no-dev --optimize-autoloader
 
-# Permissions (important for Laravel)
+# Create SQLite file (important)
+RUN mkdir -p /var/www/storage \
+ && touch /var/www/storage/database.sqlite
+
+# Permissions (Laravel needs write access)
 RUN chown -R www-data:www-data /var/www \
  && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 EXPOSE 10000
 
-# Render uses PORT env var; also run migrations on start
-CMD ["sh","-c","php artisan key:generate --force && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-10000}"]
+# IMPORTANT: do NOT generate APP_KEY here. Set APP_KEY in Render env.
+CMD ["sh","-c","php artisan config:clear && php artisan cache:clear && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-10000}"]
