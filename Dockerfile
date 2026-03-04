@@ -33,13 +33,13 @@ COPY . .
 # Install deps
 RUN composer install --no-dev --optimize-autoloader
 
-# Create SQLite file (important)
-RUN mkdir -p /var/www/storage \
- && touch /var/www/storage/database.sqlite
+# ✅ Create SQLite DB file in Laravel default location
+RUN mkdir -p /var/www/database \
+ && touch /var/www/database/database.sqlite
 
-# Permissions (Laravel needs write access)
+# ✅ Permissions (Laravel needs write access)
 RUN chown -R www-data:www-data /var/www \
- && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+ && chmod -R 775 /var/www/storage /var/www/bootstrap/cache /var/www/database
 
 EXPOSE 10000
 
