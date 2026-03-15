@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Task extends Model
 {
     protected $fillable = [
+        'user_id',
         'title',
         'description',
         'is_completed',
-        // 'user_id' қоспаймыз
     ];
 
     protected $casts = [
@@ -23,5 +23,3 @@ class Task extends Model
         return $this->belongsTo(User::class);
     }
 }
-
-

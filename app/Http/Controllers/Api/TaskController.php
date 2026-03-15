@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
-use App\Services\TaskService;
 use Illuminate\Http\Request;
+use App\Models\Task;
 
 class TaskController extends Controller
 {
@@ -24,14 +24,12 @@ class TaskController extends Controller
 
         $query = $request->user()->tasks()->latest();
 
-        // filter: is_completed
         if (array_key_exists('is_completed', $validated)) {
             $value = $validated['is_completed'];
             $bool = in_array($value, [1, '1', true, 'true'], true);
             $query->where('is_completed', $bool);
         }
 
-        // search: q (title/description)
         if (!empty($validated['q'])) {
             $q = $validated['q'];
             $query->where(function ($sub) use ($q) {
@@ -53,23 +51,26 @@ class TaskController extends Controller
         ]);
     }
 
-    public function store(StoreTaskRequest $request, TaskService $service)
+    public function store(StoreTaskRequest $request)
     {
-        $task = $service->createForUser(
-            $request->user(),
-            $request->validated()
-        );
+        $validated = $request->validated();
+
+        $task = $request->user()->tasks()->create([
+            'title' => $validated['title'],
+            'description' => $validated['description'] ?? null,
+            'is_completed' => false,
+        ]);
 
         return response()->json([
             'data' => new TaskResource($task),
         ], 201);
     }
 
-    public function update(UpdateTaskRequest $request, int $id, TaskService $service)
+    public function update(UpdateTaskRequest $request, int $id)
     {
         $task = $request->user()->tasks()->findOrFail($id);
 
-        $task = $service->update($task, $request->validated());
+        $task->update($request->validated());
 
         return response()->json([
             'data' => new TaskResource($task),
@@ -79,6 +80,7 @@ class TaskController extends Controller
     public function destroy(Request $request, int $id)
     {
         $task = $request->user()->tasks()->findOrFail($id);
+
         $task->delete();
 
         return response()->json(null, 204);

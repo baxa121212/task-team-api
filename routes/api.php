@@ -15,7 +15,6 @@ Route::prefix('v1')->group(function () {
     Route::post('/auth/login', [AuthController::class, 'login']);
 
     Route::middleware('auth:sanctum')->group(function () {
-
         Route::get('/me', function (Request $request) {
             return response()->json([
                 'data' => $request->user()
@@ -26,7 +25,5 @@ Route::prefix('v1')->group(function () {
         Route::post('/tasks', [TaskController::class, 'store']);
         Route::put('/tasks/{id}', [TaskController::class, 'update']);
         Route::delete('/tasks/{id}', [TaskController::class, 'destroy']);
-
     });
-
 });
